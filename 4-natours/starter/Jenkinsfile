@@ -1,45 +1,43 @@
-pipeline{
-    agenet any 
+pipeline {
+    agent any
+
     environment {
-        PROJECT_NAME = "MyProject"
-        DEPLOY_ENV = "production"
+        AWS_DEFAULT_REGION = 'ap-south-1'
+        S3_BUCKET = 'jenkins1st-task'
     }
-    stages{
-        stage('Checkout Code'){
-            step{
-                git branch:'main',url:'https://github.com/DexterMorgann/Node-Express.git'
+
+    stages {
+
+        stage('Checkout Code') {
+            steps {
+                git branch: 'main', url: 'https://github.com/your/repo.git'
             }
         }
-        stage('Install Dependencies'){
-            steps{
+
+        stage('Install Dependencies') {
+            steps {
                 sh 'npm install'
             }
         }
-                stage('Build React App') {
+
+        stage('Build React App') {
             steps {
-                sh '''
-                    npm run build
-                '''
-            }
-        }
-                stage('Upload to S3') {
-            steps {
-                sh '''
-                    aws s3 sync build/ s3://$S3_BUCKET --delete
-                '''
+                sh 'npm run build'
             }
         }
 
-
+        stage('Upload to S3') {
+            steps {
+                withAWS(credentials: 'aws-jenkins', region: "${AWS_DEFAULT_REGION}") {
+                    sh 'aws s3 sync build/ s3://$S3_BUCKET --delete'
+                }
+            }
+        }
     }
-        post {
-        success {
-            echo " Deployment to S3 Successful!"
-        }
-        failure {
-            echo "Deployment Failed. Check Jenkins Console Output."
-        }
+
+    post {
+        success { echo "Deployment to S3 Successful!" }
+        failure { echo "Deployment Failed! Check logs." }
     }
 }
 
-}
