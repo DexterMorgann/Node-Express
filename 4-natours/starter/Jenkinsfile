@@ -4,7 +4,7 @@ pipeline {
     environment {
         AWS_DEFAULT_REGION = 'ap-south-1'
         S3_BUCKET = 'jenkins1st-task'
-        NVM_DIR = '/var/lib/jenkins/.nvm'
+        NODEJS = '/var/lib/jenkins/.nvm/versions/node/v14.21.3/bin'
     }
 
     stages {
@@ -22,31 +22,24 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 sh '''
-                    export NVM_DIR="/var/lib/jenkins/.nvm"
-                    [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-                    nvm use 14
-
+                    export PATH="$NODEJS:$PATH"
                     node -v
                     npm -v
-
                     npm install
                 '''
             }
         }
 
-        stage('Build React App') {
+        stage('Build Project') {
             steps {
                 sh '''
-                    export NVM_DIR="/var/lib/jenkins/.nvm"
-                    [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-                    nvm use 14
-
+                    export PATH="$NODEJS:$PATH"
                     npm run build
                 '''
             }
         }
 
-        stage('Upload to S3') {
+        stage('Upload To S3') {
             steps {
                 withAWS(credentials: 'AWS Access key', region: "${AWS_DEFAULT_REGION}") {
                     sh 'aws s3 sync build/ s3://$S3_BUCKET --delete'
@@ -56,7 +49,7 @@ pipeline {
     }
 
     post {
-        success { echo "Deployment to S3 Successful!" }
-        failure { echo "Deployment Failed! Check logs." }
+        success { echo "Deployment Successful!" }
+        failure { echo "Deployment Failed!" }
     }
 }
