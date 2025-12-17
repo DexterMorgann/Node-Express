@@ -39,7 +39,6 @@ stage('Build React App') {
                 export PATH="$NODEJS:$PATH"
                 node -v
                 npm -v
-                npm run build
             '''
         }
     }
