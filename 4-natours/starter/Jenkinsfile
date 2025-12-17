@@ -1,4 +1,4 @@
-pipeline {
+        pipeline {
     agent any
 
     environment {
@@ -11,41 +11,50 @@ pipeline {
 
         stage('Checkout Code') {
             steps {
-                git(
-                    branch: 'main',
+                git branch: 'main',
                     credentialsId: '7cca05d8-4ab2-4f21-a761-ecda5edf8793',
                     url: 'https://github.com/DexterMorgann/Node-Express.git'
-                )
             }
         }
 
         stage('Install Dependencies') {
             steps {
-                sh '''
-                    export PATH="$NODEJS:$PATH"
-                    node -v
-                    npm -v
-                    npm install
-                '''
-            }
-        }
-
-        stage('Build Project') {
-            steps {
-                sh '''
-                    export PATH="$NODEJS:$PATH"
-                    npm run build
-                '''
-            }
-        }
-
-        stage('Upload To S3') {
-            steps {
-                withAWS(credentials: 'AWS Access key', region: "${AWS_DEFAULT_REGION}") {
-                    sh 'aws s3 sync build/ s3://$S3_BUCKET --delete'
+                dir('4-natours/starter') {
+                    sh '''
+                        export PATH="$NODEJS:$PATH"
+                        node -v
+                        npm -v
+                        npm install
+                    '''
                 }
             }
         }
+
+        stage('Build React App') {
+            steps {
+                dir('4-natours/starter') {
+                    sh 'npm run build'
+                }
+            }
+        }
+
+        stage('Upload to S3') {
+            steps {
+                dir('4-natours/starter/build') {
+                    withAWS(credentials: 'AWS Access key', region: "${AWS_DEFAULT_REGION}") {
+                        sh 'aws s3 sync . s3://$S3_BUCKET --delete'
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        success { echo "Deployment Successful!" }
+        failure { echo "Deployment Failed!" }
+    }
+}
+
     }
 
     post {
