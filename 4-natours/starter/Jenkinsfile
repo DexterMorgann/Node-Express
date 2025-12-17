@@ -1,4 +1,4 @@
-        pipeline {
+pipeline {
     agent any
 
     environment {
@@ -47,14 +47,6 @@
                 }
             }
         }
-    }
-
-    post {
-        success { echo "Deployment Successful!" }
-        failure { echo "Deployment Failed!" }
-    }
-}
-
     }
 
     post {
