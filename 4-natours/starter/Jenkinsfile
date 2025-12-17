@@ -17,26 +17,34 @@ pipeline {
             }
         }
 
-        stage('Install Dependencies') {
-            steps {
-                dir('4-natours/starter') {
-                    sh '''
-                        export PATH="$NODEJS:$PATH"
-                        node -v
-                        npm -v
-                        npm install
-                    '''
-                }
-            }
-        }
 
-        stage('Build React App') {
-            steps {
-                dir('4-natours/starter') {
-                    sh 'npm run build'
-                }
-            }
+
+        stage('Install Dependencies') {
+    steps {
+        dir('4-natours/starter') {
+            sh '''
+                export PATH="$NODEJS:$PATH"
+                node -v
+                npm -v
+                npm install
+            '''
         }
+    }
+}
+
+stage('Build React App') {
+    steps {
+        dir('4-natours/starter') {
+            sh '''
+                export PATH="$NODEJS:$PATH"
+                node -v
+                npm -v
+                npm run build
+            '''
+        }
+    }
+}
+
 
         stage('Upload to S3') {
             steps {
